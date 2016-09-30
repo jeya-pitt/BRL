@@ -142,13 +142,13 @@ LEARNING PARAMETERS
 
     -rgm
             Rule generation method
-            0 0 BRL1 Bayesian global rule learning (BRL-GSS) with greedy search.            
-            0 1 BRL100 Bayesian global rule learning (BRL-GSS) with beam search.
-            1 0	Bayesian local rule learning (BRL-LSS) 
+            1 0 BRL1 Bayesian global rule learning (BRL-GSS) with greedy search.            
+            1 1 BRL100 Bayesian global rule learning (BRL-GSS) with beam search.
+            2 0	Bayesian local rule learning (BRL-LSS) 
 				
 			Example:
 			For BRL-LSS:
-				-rgm 1 0
+				-rgm 2 0
 			
 	-beam WIDTH
             The number of rules kept at any time to be specialized in the next 
@@ -318,10 +318,10 @@ EXAMPLES
 	Bayesian Rule Learning:
 	Bayesian global rule learning using greedy beam search with default 
 	parameters and stratified cross validation with 10 folds.
-        java -jar BRL.jar -LP -rgm 0 1 -cv 10	-PPP	-DP data.txt
+        java -jar BRL.jar -LP -rgm 1 1 -cv 10	-PPP	-DP data.txt
     
 	Bayesian local rule learning	with default parameters and beam width of 5000.
-        java -jar BRL.jar -LP -rgm 1 0 -cv 10 -d 4 0.5 -beam 5000 -PPP	-DP data.txt
+        java -jar BRL.jar -LP -rgm 2 0 -cv 10 -d 4 0.5 -beam 5000 -PPP	-DP data.txt
 	
 
 
