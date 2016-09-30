@@ -1,0 +1,340 @@
+NOTICE
+	BRL v1.0 - Program for probabilistic rule learning, variable selection 
+	and discretization, and data preprocessing.
+    Copyright (C) 2016, PRoBE Laboratory, University of Pittsburgh.
+
+    This stand-alone program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+SYNOPSYS
+	
+	Please use Java 1.7 or above to run BRL v1.0.
+	The JRE 7 can be downloaded from Oracle at-
+	http://www.oracle.com/technetwork/java/javase/downloads/java-se-jre-7-download-432155.html
+
+        java [JAVA_PARAMETERS] -jar BRL.jar
+            [-lp LEARNING_PARAMETERS]
+            [-ppp PREPROCESSING_PARAMETERS]
+            -dp DATA_PARAMETERS
+
+        java [JAVA_PARAMETERS] algorithm.main.BRL
+            [-lp LEARNING_PARAMETERS]
+            [-ppp PREPROCESSING_PARAMETES]
+            -dp DATA_PARAMETERS
+
+DESCRIPTION
+                                        
+    BRL is a system of classification learners that learn a probabilistic 
+	rule-based classifier from data. The program implements three Bayesian network
+	searching algorithms which can be broadly classified as Global structure 
+	search(BRL-GSS) and Local structure search (BRL-LSS). The BRL-GSS includes 
+	two implementations- Greedy search and Beam search as explained in
+	(Gopalakrishnan, et al., 2010). The BRL-LSS, as explained in this paper.
+	
+	These algorithms have many learning parameters with sensible default values.
+	The program can also transform the data in various ways before learning, or 
+	even without any learning.
+
+    BRL's input is a set of training data instances (examples), specified in a 
+    data file (see DATA FILE FORMAT), where each instance is a vector of values 
+    for the input variables, and a class value. The variables can be continuous 
+    or categorical. The learned classifier comprises a set of rules of the 
+    form:
+
+    IF <antecedent> THEN <consequent>
+
+    where the antecedent consists of a logical conjunction of one or more
+    variable-value pairs (conditions), and the consequent is a prediction of the
+    class variable.  For example, a learned rule might be:
+
+    IF ((Age=High) AND (BloodPressure=Low)) THEN Class=Control
+
+    which means "if the variable Age is in the High range, and the variable
+    BloodPressure is in the Low range, then predict that the data
+    instance has the class value Control". Values such as Low and High 
+    represent intervals of real numbers that result from discretizing the 
+    variables before training with BRL. A rule is said to cover or match a data
+    instance if each variable value of the instance is in the range specified 
+    in the rule antecedent.
+    
+DATA FILE FORMAT
+
+    Each data file comprises a table of rows (lines) and columns
+    representing vectors of variable values. Example data file:
+
+    #ID  Age  Sex  Temperature  @Diagnosis
+    A42  22   F    37           Healthy
+    D25  35   M    39           Sick
+    ...  ...  ...  ...          ...
+    
+    In normally-oriented data files, each row represents a data instance
+    vector and each column represents a variable (variable) of values for
+    the instances; the first row is a header line specifying the names of the
+    variables. However, the input file can be transposed, so that rows
+    represent variables and columns represent data instances; this must be
+    specified using the "-tpf" option.
+    
+    Columns can be separated by tabs or by commas (CSV). The separator must be
+    the same throughout the file, and is assumed to be Tab unless "," occurs
+    more frequently in the header line.  The user can explicitly specify
+    the separator by using the data parameters.
+
+    The data must contain exactly one class variable (output variable), and a 
+    number of input variables. The class variable is indicated by a "@" as the 
+    first character of the variable name. The class value of the first data 
+    instance that appears in the file is used in the predictive performance 
+    statistics in the output.
+
+    A data file may contain one ID input variable, indicated by a "#" as the 
+    first character of the variable name.  RL ignores the ID variable during 
+    learning but uses it to identify data instances in the output. If no ID 
+    variable is specified, the program uses data instance IDs "1", "2" and so 
+    on, namely the index of the data instance in the data file.
+
+    Each input variable can be continuous or categorical. A continuous variable
+    is one whose values can be parsed as a numbers, such as "100" or
+    "1.25" (without the quotes). Categorical variables have values such as "F" 
+    and "M". before learning, BRL discretizes the continuous-valued variables 
+    using the specified discretizer.  If you you want RL to treat some numeric 
+    variable as categorical instead of continuous, and thus avoid discretizing 
+    it, you can add a single quote before each value. For example, instead of 
+    "100" (without the quotes), use "'100".
+
+JAVA PARAMETERS
+
+    Because BRL is a java program, it must be run on a Java virtual machine. 
+    Java can take a number of parameters, which are described in the Java 
+    manual. The classpath can be set in the CLASSPATH environment 
+    variable, or using the "-classpath" Java parameter. To provide enough 
+    memory on the Java virtual machine, use the "-Xmx" Java parameter. For 
+    example, "java -Xmx1000m".
+
+BRL PARAMETERS
+
+    Most BRL parameters have sensible default values that work well for most 
+    data sets and so do not need to be set explicitly. See the EXAMPLES 
+    section.
+
+    Some parameters must be specified with a value. The value must be separated 
+    from the parameter flag by spaces. For example, "-cv 5", not "-cv5".
+
+    BRL parameters are not case sensitive; for example, "-rgm" means the same as
+    "-Rgm", "-RGm", etc.
+
+LEARNING PARAMETERS
+
+    Learning parameters affect the learning process. They can be specified in 
+    any order after the Java parameters and before the "-ppp" flag. If no 
+    learning parameters are specified, BRL will not do any learning, but will 
+    only pre-process the input data. The "-lp" flag and the learning parameters
+    must precede the pre-processing parameters and the data parameters in the 
+    command line.
+
+    -rgm
+            Rule generation method
+            0 0 BRL1 Bayesian global rule learning (BRL-GSS) with greedy search.            
+            0 1 BRL100 Bayesian global rule learning (BRL-GSS) with beam search.
+            1 0	Bayesian local rule learning (BRL-LSS) 
+				
+			Example:
+			For BRL-LSS:
+				-rgm 1 0
+			
+	-beam WIDTH
+            The number of rules kept at any time to be specialized in the next 
+            iteration. The default is 1000.
+
+    -maxconj NUMBER
+            The maximum number of conjuncts in any rule in the model. The
+            default is 8.
+
+    -cv NUM_FOLDS
+            Stratified cross-validation. If the option is not specified, no 
+            cross-validation is performed. In any case, a classifier is 
+            learned on all the training (target) data.
+			Note: When NUM_FOLDS is greater than the total number of 
+			instances in the minority class, the performance statistics
+			over cross-validation may not be reliable.
+			
+	-stdcv NUM_FOLDS
+			Standard cross-validation. The distribution of classes in the
+			folds is not strictly maintained to be similar to the training 
+			data and is subject to effects of sampling.
+			
+	-rand SEED
+            Specifies a seed for creating random folds for running multiple 
+            runs of BRL with cross-validation. SEED is an integer. On Unix-like 
+            systems and on Windows, a random integer is provided by the RANDOM 
+            environment variable. If this option is not specified, the default
+            seed is 1.
+     
+    -d      Discretize. The parameters are as described in
+            PREPROCESSING PARAMETERS, but the discrete intervals for each
+            variable are computed based on the training data only, then
+            applied to the test data.  If cross-validation is specified, the
+            discretization is computed on the training subset separately for
+            each fold.
+
+    -r      Remove trivial variables, as in PREPROCESSING PARAMETERS
+
+PREPROCESSING PARAMETERS
+
+    These are optional parameters that specify operations to be performed on 
+    all the data before any rule learning. They can appear in any order after
+    the "-lp" flag and before the "-dp" flag. Only operations specified will
+    be performed.
+
+    -d DISC_METHOD DISC_VALUE
+            Discretize using DISC_METHOD with specified parameter.
+			Warning!: Inappropriate parameter value may result in erroneous behavior.
+            PARAMETER1  DISC_METHOD     PARAMETER2
+				
+			Unsupervised discretization:
+                     0  GaussianU	Not applicable. Enter 0. Discretizes to a maximum of 5 bins.
+                     1  EqualWidthU	Number of bins (default: 5)
+                     2  EqualFreqU	Number of bins (default: 5)
+			Supervised discretization:
+                     3  FayyadIraniMDL	Max number of bins (default: 5)
+		     4	EBD	lambda (default: 0.5)
+
+            Examples:
+		Unsupervised equal width discretization with 3 bins:
+				-d 1 3
+			
+		Supervised EBD (Lustgarten et al. 2011) discretization with (default) parameter 0.5:
+				-d 4 0.5
+
+    -r      Remove trivial variables after discretization
+	
+	-dr DISC_METHOD DISC_VALUE
+			The parameter values are the same as for option '-d'. In addition to
+			discretization, this option also removes trivial variables as shown
+			in option '-r'. Instead of using both '-d' and '-r' the user may
+			just use '-dr' instead.
+	
+    -s SCALING_METHOD ...
+            Scale each variable by the specified SCALING_METHOD in turn
+            0   0-1 scaling
+            1   Subtract local minimum
+            2   Subtract global minimum
+            3   Log2
+            4   Square root
+            5   Exponent 2
+            6   Square
+            7   Normalize to mean 0 and standard deviation 1
+
+DATA PARAMETERS
+
+    Data parameters specify the input and output files and their format. The 
+    training data file is a mandatory data parameter and must be the last 
+    parameter. Data parameters must be preceded by the "-dp" flag. The "-dp" 
+    flag and the data parameters must appear after the "-lp" flag and any 
+    learning parameters, and after the "-ppp" flag and any pre-processing 
+    parameters.
+
+    -c CSV_DATA_FILE
+            Convert the tab/csv-delimited file to tab-delimited or vice versa.
+     
+
+    -dtr TRAINING_DIRECTORY
+            Directory containing the training data files, one file for each 
+            training data instance. Each file contains two columns: variable
+            and value. Within the directory files grouped by class folder; e.g.
+            inside the training directory, there are two folders: "disease" and
+            "control".  There should be no trailing "/" in TRAINING_DIRECTORY 
+            name.
+
+    -tst TEST_FILE
+            Specify a test data file
+
+    -dtst TEST_DIRECTORY
+            Similar to -dtr.
+
+    -od OUTPUT_DIRECTORY
+            The output directory where to write the result files. The directory 
+            is automatically created if it does not already exist.
+
+    -o OUTPUT_DATA_FORMAT
+            csv
+                Comma-separated values format
+            The default is tab-separated.
+
+    -cmbf DIRECTORY
+            Combine the files in DIRECTORY. Each file represents one training
+            example (such as a mass spectrum), and contains two comma-
+            separated columns. The first column contains the names of the 
+            variables (such as M/Z values). The second column contains the 
+            values for those variables (such as intensity values).
+            
+    TRAINING_FILE
+            The training data file is specified as the last argument. This
+            argument must always be specified.
+
+OUTPUT
+
+    The program prints to standard output a log of its working that includes the 
+    the program parameters (and learning parameters), classifier learned,
+    predictive performance statistics, starting time and total running time.
+	
+	For each rule, the log includes the following statistics: Posterior odds, 
+	Posterior probability, p-value (P), true positive (TP) count, false positive 
+	(FP) count, positive class (Pos) count, negative class (Neg) count, test TP 
+	and test FP. These last two statistics are the number of test examples for
+     	which the rule was applied correctly (TP) or incorrectly (FP) when using the
+    	whole model. Each instance would fire at least one of the mutually exclusive 
+	rules in the model. Additional statistics include the class-wise 
+	Sensitivity, Specificity, Balanced Accuracy and the Area under the receiver 
+	operator characteristics curve. This is followed by the contingency matrix.
+	
+    BRL also creates some output files in an output folder named by default as
+	BRL_run_YYYY-MM-DD-hhmmss where the last part of the file name is the time 
+	when the BRL was run. To change this default name, please refer to the data
+	parameter '-od'. The usual output files are as follows-
+	
+	The suffix *.sel.txt contains the attributes selected by the BRL model. File
+	*.disc.txt has the continuous attributes in *.sel.txt displayed as nominal
+	discretized attributes. Files *.rules, *.perf and *.pred contains the BRL 
+	model, the model with relevant statistics and prediction on the test data 
+	instances respectively. The information from cross-validation is also stored
+	in similarly names files- *.cv.rules, *.cv.perf and *.cv.pred.
+	 
+EXAMPLES
+
+    Discretization:
+	Pre-process the data by discretizing using EBD with lambda 0.5, without 
+	learning:
+        java -jar BRL.jar -PPP -d 4 0.5	-DP data.txt
+	
+	Bayesian Rule Learning:
+	Bayesian global rule learning using greedy beam search with default 
+	parameters and stratified cross validation with 10 folds.
+        java -jar BRL.jar -LP -rgm 0 1 -cv 10	-PPP	-DP data.txt
+    
+	Bayesian local rule learning	with default parameters and beam width of 5000.
+        java -jar BRL.jar -LP -rgm 1 0 -cv 10 -d 4 0.5 -beam 5000 -PPP	-DP data.txt
+	
+
+
+CONTACT US
+
+	For more information please contact Dr. Vanathi Gopalakrishnan 
+	(vanathi@pitt.edu).
+
+	For reporting bugs please contact Jeya Balaji Balasubramanian (jeya@pitt.edu).	
+
+PUBLICATIONS
+
+    Gopalakrishnan, V., et al. (2010) Bayesian rule learning for biomedical data mining, Bioinformatics, 26, 668-675.
+    Lustgarten, J. L., et al. (2011) Application of an Efficient Bayesian Discretization Method to Biomedical Data. 
+                                     BMC Bioinformatics. 12:309. 
+	
