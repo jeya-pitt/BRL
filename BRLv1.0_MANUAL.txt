@@ -334,7 +334,10 @@ CONTACT US
 
 PUBLICATIONS
 
-    Gopalakrishnan, V., et al. (2010) Bayesian rule learning for biomedical data mining, Bioinformatics, 26, 668-675.
+    Lustgarten, J. L., et al. (2017) "Learning Parsimonious Classification Rules from Gene Expression Data Using 
+    				     Bayesian Networks with Local Structure." Data 2.1 (2017): 5.
     Lustgarten, J. L., et al. (2011) Application of an Efficient Bayesian Discretization Method to Biomedical Data. 
                                      BMC Bioinformatics. 12:309. 
+    Gopalakrishnan, V., et al. (2010) Bayesian rule learning for biomedical data mining, Bioinformatics, 26, 668-675.
+
 	
